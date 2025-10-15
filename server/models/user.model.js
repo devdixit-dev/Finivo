@@ -11,10 +11,40 @@ const userSchema = new mongoose.Schema({
     type: String,
     smallcase: true
   },
+  role: {
+    type: String,
+    enum: ['user', 'admin'],
+    default: 'user',
+  },
+  verificationOtp: {
+    type: Number,
+    minLength: 6,
+    maxLength: 6
+  },
   password: {
     type: String,
     minLength: 6,
     maxLength: 18
+  },
+  totalBudget: {
+    type: Number,
+    default: 0
+  },
+  totalSpent: {
+    type: Number,
+    default: 0
+  },
+  remaining: {
+    type: Number,
+    default: 0
+  },
+  isVerified: {
+    type: Boolean,
+    default: false
+  },
+  isActive: {
+    type: Boolean,
+    default: false
   }
 }, {timestamps: true});
 
