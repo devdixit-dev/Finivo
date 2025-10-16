@@ -120,6 +120,45 @@ export const VerifyEmail = async (req, res) => {
   }
 }
 
-export const Login = async (req, res) => {}
+export const Login = async (req, res) => {
+  try{
+    const { email, password } = req.body;
+    if(!email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: 'All fields are required for login'
+      });
+    }
+
+    const user = await User.findOne({ email });
+    if(!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    const matchPassword = bcrypt.compare(password, user.password);
+    if(!matchPassword) {
+      return res.status(403).json({
+        success: false,
+        message: 'Invalid credentials'
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: 'User logged in',
+      data: user
+    });
+  }
+  catch(err) {
+    console.error(`Error in login controller - ${err}`);
+    return res.status(500).json({
+      success: false,
+      message: 'Internal server error'
+    });
+  }
+}
 
 export const Logout = async (req, res) => {}
