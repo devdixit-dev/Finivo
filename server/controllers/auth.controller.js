@@ -146,10 +146,23 @@ export const Login = async (req, res) => {
       });
     }
 
+    const payload = {
+      userId: user._id,
+      role: user.role
+    }
+
+    const signedLoginToken = signToken(payload, '30m');
+
+    res.cookie('a_token', signedLoginToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: true
+    })
+
     return res.status(200).json({
       success: true,
       message: 'User logged in',
-      data: user
+      token: signedLoginToken
     });
   }
   catch(err) {
@@ -161,4 +174,44 @@ export const Login = async (req, res) => {
   }
 }
 
-export const Logout = async (req, res) => {}
+export const Logout = async (req, res) => {
+  try{
+    const token = req.cookies.a_token;
+    if(!token) {
+      return res.status(404).json({
+        success: false,
+        message: 'No token provided'
+      });
+    }
+
+    const decodedUser = verifyToken(token);
+    if(!decodedUser) {
+      return res.status(403).json({
+        success: false,
+        message: 'Invalid token'
+      });
+    }
+
+    const user = await User.findById(decodedUser.userId);
+    if(!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    res.clearCookies('a_token');
+
+    return res.status(200).json({
+      success: true,
+      message: 'User logged out !'
+    });
+  }
+  catch(err) {
+    console.error(`Error in logout controller - ${err}`);
+    return res.status(500).json({
+      success: false,
+      message: 'Internal server error'
+    });
+  }
+}
