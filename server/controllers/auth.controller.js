@@ -64,14 +64,14 @@ export const VerifyEmail = async (req, res) => {
     const token = req.cookies.v_token;
     const { otp } = req.body;
 
-    if(!token) {
+    if (!token) {
       return res.status(401).json({
         success: false,
         message: 'No token provided'
       });
     }
 
-    if(!otp) {
+    if (!otp) {
       return res.status(404).json({
         success: false,
         message: 'OTP is required for verification'
@@ -79,7 +79,7 @@ export const VerifyEmail = async (req, res) => {
     }
 
     const decodedUser = verifyToken(token);
-    if(!decodedUser) {
+    if (!decodedUser) {
       return res.status(403).json({
         success: false,
         message: 'Token is not valid'
@@ -87,14 +87,14 @@ export const VerifyEmail = async (req, res) => {
     }
 
     const user = await User.findById(decodedUser.userId);
-    if(!user) {
+    if (!user) {
       return res.status(404).json({
         success: false,
         message: 'User not found'
       });
     }
 
-    if(user.verificationOtp !== otp) {
+    if (user.verificationOtp !== otp) {
       return res.status(403).json({
         success: false,
         message: 'OTP is incorrect'
@@ -103,7 +103,10 @@ export const VerifyEmail = async (req, res) => {
 
     user.verificationOtp = null;
     user.isVerified = true;
+    user.isActive = true;
     await user.save();
+
+    res.clearCookie('v_token');
 
     return res.status(200).json({
       success: true,
@@ -121,9 +124,9 @@ export const VerifyEmail = async (req, res) => {
 }
 
 export const Login = async (req, res) => {
-  try{
+  try {
     const { email, password } = req.body;
-    if(!email || !password) {
+    if (!email || !password) {
       return res.status(400).json({
         success: false,
         message: 'All fields are required for login'
@@ -131,7 +134,7 @@ export const Login = async (req, res) => {
     }
 
     const user = await User.findOne({ email });
-    if(!user) {
+    if (!user) {
       return res.status(404).json({
         success: false,
         message: 'User not found'
@@ -139,25 +142,66 @@ export const Login = async (req, res) => {
     }
 
     const matchPassword = bcrypt.compare(password, user.password);
-    if(!matchPassword) {
+    if (!matchPassword) {
       return res.status(403).json({
         success: false,
         message: 'Invalid credentials'
       });
     }
 
+    if (!user.isVerified) {
+      return res.status(400).json({
+        success: false,
+        message: 'User verification is pending'
+      });
+    }
+
+    // if (Date.now() > user.last_login_attempt + 15 * 60 * 1000) {
+    //   user.login_attempt = 0;
+    //   user.last_login_attempt = new Date.now().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })
+    //   user.save();
+    // }
+
+    // if (user.login_attempt > 5) {
+    //   return res.status(400).json({
+    //     success: false,
+    //     message: 'Too many login attempts. please try again after some time'
+    //   });
+    // }
+
+    // Check and reset login attempts after 15 minutes
+    if (Date.now() - user.last_login_attempt > 15 * 60 * 1000) {
+      user.login_attempt = 0;
+      user.last_login_attempt = Date.now();
+      await user.save();
+    }
+
+    // Check if user exceeded allowed login attempts
+    if (user.login_attempt >= 5) {
+      return res.status(429).json({
+        success: false,
+        message: 'Too many login attempts. Please try again after 15 minutes.',
+      });
+    }
+
+
     const payload = {
       userId: user._id,
       role: user.role
     }
+
+    user.login_attempt += 1;
+    user.last_login_attempt = Date.now()
+    user.save();
 
     const signedLoginToken = signToken(payload, '30m');
 
     res.cookie('a_token', signedLoginToken, {
       httpOnly: true,
       secure: true,
-      sameSite: true
-    })
+      sameSite: true,
+      maxAge: 30 * 60 * 1000
+    });
 
     return res.status(200).json({
       success: true,
@@ -165,7 +209,7 @@ export const Login = async (req, res) => {
       token: signedLoginToken
     });
   }
-  catch(err) {
+  catch (err) {
     console.error(`Error in login controller - ${err}`);
     return res.status(500).json({
       success: false,
@@ -175,9 +219,9 @@ export const Login = async (req, res) => {
 }
 
 export const Logout = async (req, res) => {
-  try{
+  try {
     const token = req.cookies.a_token;
-    if(!token) {
+    if (!token) {
       return res.status(404).json({
         success: false,
         message: 'No token provided'
@@ -185,7 +229,7 @@ export const Logout = async (req, res) => {
     }
 
     const decodedUser = verifyToken(token);
-    if(!decodedUser) {
+    if (!decodedUser) {
       return res.status(403).json({
         success: false,
         message: 'Invalid token'
@@ -193,21 +237,21 @@ export const Logout = async (req, res) => {
     }
 
     const user = await User.findById(decodedUser.userId);
-    if(!user) {
+    if (!user) {
       return res.status(404).json({
         success: false,
         message: 'User not found'
       });
     }
 
-    res.clearCookies('a_token');
+    res.clearCookie('a_token');
 
     return res.status(200).json({
       success: true,
       message: 'User logged out !'
     });
   }
-  catch(err) {
+  catch (err) {
     console.error(`Error in logout controller - ${err}`);
     return res.status(500).json({
       success: false,

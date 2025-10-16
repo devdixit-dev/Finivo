@@ -10,6 +10,9 @@ const logSchema = new mongoose.Schema({
   },
   url: {
     type: String
+  },
+  ip: {
+    type: String
   }
 });
 

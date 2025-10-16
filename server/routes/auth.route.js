@@ -4,9 +4,9 @@ import { isAuthenticated } from '../middlewares/auth.middleware.js';
 
 const authRouter = Router();
 
-authRouter.get('/register', Register);
+authRouter.post('/register', Register);
 
-authRouter.put('/verify-email', VerifyEmail);
+authRouter.post('/verify', VerifyEmail);
 
 authRouter.post('/login', Login);
 

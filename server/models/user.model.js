@@ -23,8 +23,7 @@ const userSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    minLength: 6,
-    maxLength: 18
+    minLength: 6
   },
   totalBudget: {
     type: Number,
@@ -45,6 +44,14 @@ const userSchema = new mongoose.Schema({
   isActive: {
     type: Boolean,
     default: false
+  },
+  login_attempt: {
+    type: Number,
+    default: 0
+  },
+  last_login_attempt: {
+    type: Number,
+    default: 0
   }
 }, {timestamps: true});
 
