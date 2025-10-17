@@ -206,13 +206,7 @@ export const Login = async (req, res) => {
 export const Logout = async (req, res) => {
   try {
     const token = req.cookies.a_token;
-    if (!token) {
-      return res.status(404).json({
-        success: false,
-        message: 'No token provided'
-      });
-    }
-
+    
     const decodedUser = verifyToken(token);
     if (!decodedUser) {
       return res.status(403).json({
