@@ -156,27 +156,12 @@ export const Login = async (req, res) => {
       });
     }
 
-    // if (Date.now() > user.last_login_attempt + 15 * 60 * 1000) {
-    //   user.login_attempt = 0;
-    //   user.last_login_attempt = new Date.now().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })
-    //   user.save();
-    // }
-
-    // if (user.login_attempt > 5) {
-    //   return res.status(400).json({
-    //     success: false,
-    //     message: 'Too many login attempts. please try again after some time'
-    //   });
-    // }
-
-    // Check and reset login attempts after 15 minutes
     if (Date.now() - user.last_login_attempt > 15 * 60 * 1000) {
       user.login_attempt = 0;
       user.last_login_attempt = Date.now();
       await user.save();
     }
 
-    // Check if user exceeded allowed login attempts
     if (user.login_attempt >= 5) {
       return res.status(429).json({
         success: false,
