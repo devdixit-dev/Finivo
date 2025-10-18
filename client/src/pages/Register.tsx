@@ -8,12 +8,14 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 import { Loader2, UserPlus } from 'lucide-react';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import axios from 'axios';
 
 const Register = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const { register, isLoading } = useAuth();
+  const [isRegister, setIsRegister] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -38,12 +40,26 @@ const Register = () => {
     }
 
     try {
+
+      const formData = {
+        name, email, password
+      }
+      console.log(`Client: ${formData}`);
+
+      const response = await axios.post(
+        `${import.meta.env.VITE_BACKEND_URL}/auth/register`, 
+        formData, 
+        { withCredentials: true }
+      );
+      console.log(`Server: ${response}`);
+
       await register(name, email, password);
       toast({
         title: 'Success!',
         description: 'Registration successful. Please verify your email.',
       });
       navigate(`/verify-otp?email=${encodeURIComponent(email)}`);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       toast({
         title: 'Error',
