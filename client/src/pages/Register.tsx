@@ -40,41 +40,45 @@ const Register = () => {
     }
 
     try {
-
-      const formData = {
-        name, email, password
-      }
-      console.log(`Client: ${formData}`);
-
+      const formData = { fullname: name.trim(), email: email.trim(), password };
+      
       const response = await axios.post(
-        `${import.meta.env.VITE_BACKEND_URL}/auth/register`, 
-        formData, 
+        `${import.meta.env.VITE_BACKEND_URL}/auth/register`,
+        formData,
         { withCredentials: true }
       );
-      console.log(`Server: ${response}`);
 
-      await register(name, email, password);
       toast({
-        title: 'Success!',
-        description: 'Registration successful. Please verify your email.',
+        title: 'Success',
+        description: response.data.message || 'Account created successfully!',
       });
-      navigate(`/verify-otp?email=${encodeURIComponent(email)}`);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
-      toast({
-        title: 'Error',
-        description: error.message || 'Registration failed',
-        variant: 'destructive',
-      });
+      navigate('/verify-otp');
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        const message =
+          error.response?.data?.message || 'Registration failed. Try again.';
+        toast({
+          title: 'Error',
+          description: message,
+          variant: 'destructive',
+        });
+      } else {
+        toast({
+          title: 'Error',
+          description: 'Something went wrong. Please try again later.',
+          variant: 'destructive',
+        });
+      }
     }
   };
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted p-4">
       <div className="absolute top-4 right-4">
         <ThemeToggle />
       </div>
-      
+
       <Card className="w-full max-w-md shadow-lg">
         <CardHeader className="space-y-1 text-center">
           <div className="mx-auto mb-4 w-12 h-12 bg-gradient-primary rounded-full flex items-center justify-center">

@@ -15,12 +15,6 @@ const VerifyOTP = () => {
   const { verifyOTP, isLoading } = useAuth();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (!email) {
-      navigate('/register');
-    }
-  }, [email, navigate]);
-
   const handleVerify = async () => {
     if (otp.length !== 6) {
       toast({
