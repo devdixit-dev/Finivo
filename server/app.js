@@ -16,14 +16,14 @@ app.use(express.json());
 app.use(compression());
 app.use(cookieParser());
 
-app.use('/auth', authRouter);
-
 app.use(cors({
   origin: process.env.FRONTEND_URL,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   credentials: true,
   allowedHeaders: ["Content-Type", "Authorization"]
 }));
+
+app.use('/auth', authRouter);
 
 app.get('/', (req, res) => {
   res.send('Home route working');

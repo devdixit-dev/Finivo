@@ -14,7 +14,7 @@ export const Register = async (req, res) => {
 
     const isExist = await User.findOne({ email });
     if (isExist) {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         message: 'User already exist'
       });
@@ -40,8 +40,8 @@ export const Register = async (req, res) => {
 
     res.cookie('v_token', signedToken, {
       httpOnly: true,
-      sameSite: true,
-      secure: true
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      secure: process.env.JWT_ENV === 'production'
     });
 
     return res.status(201).json({
@@ -183,8 +183,8 @@ export const Login = async (req, res) => {
 
     res.cookie('a_token', signedLoginToken, {
       httpOnly: true,
-      secure: true,
-      sameSite: true,
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      secure: process.env.JWT_ENV === 'production',
       maxAge: 30 * 60 * 1000
     });
 
