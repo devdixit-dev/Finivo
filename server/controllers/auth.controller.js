@@ -33,7 +33,6 @@ export const Register = async (req, res) => {
     const payload = {
       userId: user._id,
       role: user.role,
-      otp: otp
     }
 
     const signedToken = signToken(payload, '5m');
@@ -46,8 +45,7 @@ export const Register = async (req, res) => {
 
     return res.status(201).json({
       success: true,
-      message: 'User registered successfully',
-      v_token: signedToken
+      message: 'Verification mail sent ✅'
     });
   }
   catch (err) {

@@ -17,7 +17,7 @@ const userSchema = new mongoose.Schema({
     default: 'user',
   },
   verificationOtp: {
-    type: Number,
+    type: String,
     minLength: 6,
     maxLength: 6
   },
