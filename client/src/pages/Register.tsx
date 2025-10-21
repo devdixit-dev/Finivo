@@ -49,7 +49,6 @@ const Register = () => {
       );
 
       toast({
-        title: 'Success',
         description: response.data.message || 'Account created successfully!',
       });
       navigate('/verify-otp');

@@ -1,20 +1,19 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
-import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 import { Loader2, ShieldCheck } from 'lucide-react';
 import { ThemeToggle } from '@/components/ThemeToggle';
 
 const VerifyOTP = () => {
   const [otp, setOtp] = useState('');
-  const [searchParams] = useSearchParams();
-  const email = searchParams.get('email') || '';
-  const { verifyOTP, isLoading } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
+  // handleVerify → client verifies OTP with backend
   const handleVerify = async () => {
     if (otp.length !== 6) {
       toast({
@@ -25,21 +24,49 @@ const VerifyOTP = () => {
       return;
     }
 
-    const success = await verifyOTP(email, otp);
-    
-    if (success) {
-      toast({
-        title: 'Success!',
-        description: 'Email verified successfully',
-      });
-      navigate('/login');
-    } else {
-      toast({
-        title: 'Error',
-        description: 'Invalid OTP. Please try again.',
-        variant: 'destructive',
-      });
+    try {
+      setIsLoading(true);
+
+      // Send OTP to your backend for verification
+      const response = await axios.post(
+        `${import.meta.env.VITE_BACKEND_URL}/auth/verify`,
+        { otp },
+        { withCredentials: true } // important for cookie-based tokens
+      );
+
+      if (response.data.success) {
+        toast({
+          description: 'Email verified successfully ✅',
+        });
+
+        navigate('/login');
+      } else {
+        toast({
+          title: 'Error',
+          description: response.data.message || 'Invalid OTP. Please try again.',
+          variant: 'destructive',
+        });
+        setOtp('');
+      }
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        const message =
+          error.response?.data?.message || 'Verification failed. Try again.';
+        toast({
+          title: 'Error',
+          description: message,
+          variant: 'destructive',
+        });
+      } else {
+        toast({
+          title: 'Error',
+          description: 'Something went wrong. Please try again later.',
+          variant: 'destructive',
+        });
+      }
       setOtp('');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -48,7 +75,7 @@ const VerifyOTP = () => {
       <div className="absolute top-4 right-4">
         <ThemeToggle />
       </div>
-      
+
       <Card className="w-full max-w-md shadow-lg">
         <CardHeader className="space-y-1 text-center">
           <div className="mx-auto mb-4 w-12 h-12 bg-gradient-success rounded-full flex items-center justify-center">
@@ -56,10 +83,10 @@ const VerifyOTP = () => {
           </div>
           <CardTitle className="text-2xl font-bold">Verify Email</CardTitle>
           <CardDescription>
-            Enter the 6-digit code sent to<br />
-            <span className="font-medium text-foreground">{email}</span>
+            Enter the 6-digit code sent to your email
           </CardDescription>
         </CardHeader>
+
         <CardContent className="space-y-4">
           <div className="flex justify-center">
             <InputOTP maxLength={6} value={otp} onChange={setOtp}>
@@ -72,11 +99,6 @@ const VerifyOTP = () => {
                 <InputOTPSlot index={5} />
               </InputOTPGroup>
             </InputOTP>
-          </div>
-          
-          <div className="bg-muted p-3 rounded-lg text-center">
-            <p className="text-sm text-muted-foreground">Demo OTP Code:</p>
-            <p className="text-lg font-bold text-primary">123456</p>
           </div>
 
           <Button
