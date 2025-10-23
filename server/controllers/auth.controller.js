@@ -201,10 +201,29 @@ export const Login = async (req, res) => {
   }
 }
 
+export const Verify = async (req, res) => {
+  try {
+    const token = req.cookies?.a_token;
+    if (!token) {
+      return res.status(401).json({ success: false, message: 'No token provided' });
+    }
+
+    const decoded = verifyToken(token);
+    const user = await User.findById(decoded.userId).select('-password');
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    res.json({ success: true, user });
+  } catch (err) {
+    res.status(401).json({ success: false, message: 'Invalid or expired token' });
+  }
+};
+
 export const Logout = async (req, res) => {
   try {
     const token = req.cookies.a_token;
-    
+
     const decodedUser = verifyToken(token);
     if (!decodedUser) {
       return res.status(403).json({
