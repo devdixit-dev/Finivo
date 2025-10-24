@@ -45,6 +45,10 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  expenses: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Expense'
+  }],
   login_attempt: {
     type: Number,
     default: 0

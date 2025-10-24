@@ -1,31 +1,26 @@
-import Expense from "../models/expense.model";
-import User from "../models/user.model";
+import Expense from "../models/expense.model.js";
+import User from "../models/user.model.js";
 
 export const Dashboard = async (req, res) => {
   try{
-    const user = req?.user;
-    if(!user) {
-      return res.status(403).json({
+    const userData = await User.findById(req.user._id)
+    .select('-updatedAt -createdAt -__v -email -password -isVerified -isActive -login_attempt -last_login_attempt -role -verificationOtp');
+
+    if(!userData) {
+      return res.status(404).json({
         success: false,
-        message: 'User is undefined'
+        message: 'User not found'
       });
     }
 
-    const userData = await User.findById(user._id)
-    .select('-updatedAt -createdAt -__v -email -password -isVerified -isActive -login_attempt -last_login_attempt -role -verificationOtp');
-
-    const expenseData = await Expense.findById(user._id)
-    .select()
+    const expenseData = await Expense.findById(req.user._id)
+    .select('-isExpenseActive -createdAt -updatedAt -__v');
 
     return res.status(200).json({
       success: true,
-      data: {
-        username: userData.fullname,
-        totalBudget: userData.totalBudget,
-        totalSpent: userData.totalSpent,
-        remaining: userData.remaining,
-      }
-    })
+      userData,
+      expenseData
+    });
   }
   catch(err) {
     console.log(`Error in Dashboard controller - ${err.message}`);

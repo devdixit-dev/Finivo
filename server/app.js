@@ -6,6 +6,7 @@ import cors from 'cors';
 
 import connectDatabase from './configs/database.config.js';
 import authRouter from './routes/auth.route.js';
+import userRouter from './routes/user.route.js';
 
 const app = express();
 const port = process.env.PORT || 3030;
@@ -24,6 +25,7 @@ app.use(cors({
 }));
 
 app.use('/auth', authRouter);
+app.use('/user', userRouter);
 
 app.get('/', (req, res) => {
   res.send('Home route working');
