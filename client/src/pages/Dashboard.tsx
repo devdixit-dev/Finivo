@@ -57,34 +57,34 @@ const Dashboard = () => {
 
   // ---------------- LIFECYCLE ----------------
   useEffect(() => {
-    verifyUser();
-    fetchExpenses();
+    fetchDashboardData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // ---------------- API CALLS ----------------
-  const verifyUser = async () => {
-    try {
-      const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/auth/me`, {
-        withCredentials: true,
-      });
-      setUser(response.data.user);
-    } catch (error) {
-      navigate('/login'); // not authenticated
-    }
-  };
 
-  const fetchExpenses = async () => {
+  /**
+   * Fetches both user and expense data from backend /api/dashboard
+   */
+  const fetchDashboardData = async () => {
     try {
-      const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/expenses`, {
+      const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/dashboard`, {
         withCredentials: true,
       });
-      setExpenses(res.data.expenses);
+
+      if (!res.data.success) throw new Error('Dashboard fetch failed');
+
+      setUser(res.data.userData);
+      setExpenses(res.data.expenseData);
     } catch (err) {
-      console.error(err);
+      console.error('Dashboard fetch error:', err);
+      navigate('/login'); // redirect to login if unauthorized
     }
   };
 
+  /**
+   * Add a new expense
+   */
   const handleAddExpense = async () => {
     if (!expenseName || !expenseCategory || !expenseType || !expensePrice) {
       toast({
@@ -141,6 +141,9 @@ const Dashboard = () => {
     }
   };
 
+  /**
+   * Update user's budget
+   */
   const handleSetBudget = async (budget: number) => {
     try {
       await axios.put(
@@ -164,9 +167,20 @@ const Dashboard = () => {
     }
   };
 
+  /**
+   * Logout user
+   */
   const handleLogout = async () => {
-    await axios.post(`${import.meta.env.VITE_BACKEND_URL}/auth/logout`, {}, { withCredentials: true });
-    navigate('/login');
+    try {
+      await axios.post(`${import.meta.env.VITE_BACKEND_URL}/auth/logout`, {}, { withCredentials: true });
+      navigate('/login');
+    } catch (err) {
+      toast({
+        title: 'Error',
+        description: 'Failed to logout. Try again.',
+        variant: 'destructive',
+      });
+    }
   };
 
   // ---------------- COMPUTED VALUES ----------------
@@ -238,32 +252,35 @@ const Dashboard = () => {
 
           {/* REMAINING */}
           <Card
-            className={`bg-gradient-card border-2 shadow-md ${remaining < 0
+            className={`bg-gradient-card border-2 shadow-md ${
+              remaining < 0
                 ? 'border-destructive'
                 : remaining < user.budget * 0.2
-                  ? 'border-warning'
-                  : 'border-success'
-              }`}
+                ? 'border-warning'
+                : 'border-success'
+            }`}
           >
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">Remaining</CardTitle>
               <Wallet
-                className={`h-4 w-4 ${remaining < 0
+                className={`h-4 w-4 ${
+                  remaining < 0
                     ? 'text-destructive'
                     : remaining < user.budget * 0.2
-                      ? 'text-warning'
-                      : 'text-success'
-                  }`}
+                    ? 'text-warning'
+                    : 'text-success'
+                }`}
               />
             </CardHeader>
             <CardContent>
               <div
-                className={`text-2xl font-bold ${remaining < 0
+                className={`text-2xl font-bold ${
+                  remaining < 0
                     ? 'text-destructive'
                     : remaining < user.budget * 0.2
-                      ? 'text-warning'
-                      : 'text-success'
-                  }`}
+                    ? 'text-warning'
+                    : 'text-success'
+                }`}
               >
                 ₹{remaining.toLocaleString()}
               </div>
