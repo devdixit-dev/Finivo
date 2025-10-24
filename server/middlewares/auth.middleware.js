@@ -18,7 +18,7 @@ export const isAuthenticated = async (req, res, next) => {
       });
     }
 
-    if(!verifiedUser.role === 'user') {
+    if(verifiedUser.role !== 'user') {
       return res.status(403).json({
         success: false,
         message: 'Unauthorized access denied'
