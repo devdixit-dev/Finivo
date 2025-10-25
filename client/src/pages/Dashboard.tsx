@@ -42,6 +42,7 @@ const Dashboard = () => {
 
   // ---------------- STATE ----------------
   const [user, setUser] = useState<{ name: string; budget: number } | null>(null);
+  const [username, setUsername] = useState('')
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [expenses, setExpenses] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -68,9 +69,10 @@ const Dashboard = () => {
    */
   const fetchDashboardData = async () => {
     try {
-      const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/dashboard`, {
+      const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/user/dashboard`, {
         withCredentials: true,
       });
+      console.log(res.data)
 
       if (!res.data.success) throw new Error('Dashboard fetch failed');
 
@@ -223,7 +225,7 @@ const Dashboard = () => {
               <Wallet className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">₹{user.budget.toLocaleString()}</div>
+              <div className="text-2xl font-bold">₹{user.budget}</div>
               <Button
                 variant="link"
                 className="px-0 text-xs"
@@ -252,35 +254,32 @@ const Dashboard = () => {
 
           {/* REMAINING */}
           <Card
-            className={`bg-gradient-card border-2 shadow-md ${
-              remaining < 0
+            className={`bg-gradient-card border-2 shadow-md ${remaining < 0
                 ? 'border-destructive'
                 : remaining < user.budget * 0.2
-                ? 'border-warning'
-                : 'border-success'
-            }`}
+                  ? 'border-warning'
+                  : 'border-success'
+              }`}
           >
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">Remaining</CardTitle>
               <Wallet
-                className={`h-4 w-4 ${
-                  remaining < 0
+                className={`h-4 w-4 ${remaining < 0
                     ? 'text-destructive'
                     : remaining < user.budget * 0.2
-                    ? 'text-warning'
-                    : 'text-success'
-                }`}
+                      ? 'text-warning'
+                      : 'text-success'
+                  }`}
               />
             </CardHeader>
             <CardContent>
               <div
-                className={`text-2xl font-bold ${
-                  remaining < 0
+                className={`text-2xl font-bold ${remaining < 0
                     ? 'text-destructive'
                     : remaining < user.budget * 0.2
-                    ? 'text-warning'
-                    : 'text-success'
-                }`}
+                      ? 'text-warning'
+                      : 'text-success'
+                  }`}
               >
                 ₹{remaining.toLocaleString()}
               </div>

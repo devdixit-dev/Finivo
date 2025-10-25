@@ -13,7 +13,7 @@ interface BudgetDialogProps {
 }
 
 export const BudgetDialog = ({ open, onOpenChange, onSetBudget, currentBudget }: BudgetDialogProps) => {
-  const [budget, setBudget] = useState(currentBudget.toString());
+  const [budget, setBudget] = useState(currentBudget?.toLocaleString());
 
   const handleSubmit = () => {
     const budgetValue = parseFloat(budget);
