@@ -108,8 +108,7 @@ export const VerifyEmail = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      message: 'User email is verified',
-      data: user
+      message: 'User email is verified'
     });
   }
   catch (err) {
@@ -188,8 +187,7 @@ export const Login = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      message: 'User logged in',
-      token: signedLoginToken
+      message: 'User logged in'
     });
   }
   catch (err) {

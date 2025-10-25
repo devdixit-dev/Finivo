@@ -3,8 +3,9 @@ import User from "../models/user.model.js";
 
 export const Dashboard = async (req, res) => {
   try{
-    const userData = await User.findById(req.user._id)
-    .select('-updatedAt -createdAt -__v -email -password -isVerified -isActive -login_attempt -last_login_attempt -role -verificationOtp');
+    const userData = await User.findById(req.user.userId)
+    .select('-updatedAt -createdAt -__v -email -password -isVerified -isActive -login_attempt -last_login_attempt -role -verificationOtp')
+    .lean()
 
     if(!userData) {
       return res.status(404).json({
@@ -13,8 +14,9 @@ export const Dashboard = async (req, res) => {
       });
     }
 
-    const expenseData = await Expense.findById(req.user._id)
-    .select('-isExpenseActive -createdAt -updatedAt -__v');
+    const expenseData = await Expense.find({ userid: req.user.userId })
+    .select('-isExpenseActive -createdAt -updatedAt -__v')
+    .lean()
 
     return res.status(200).json({
       success: true,
